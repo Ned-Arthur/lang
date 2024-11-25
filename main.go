@@ -71,6 +71,28 @@ func traverseBackTo(token string) {
 	for state.tokens[state.pc][0] != token { state.pc-- }
 }
 
+// Turn a raw file string into a 2d token array
+func tokenizeProgram(program string) [][]string {
+	lines := slices.DeleteFunc(strings.Split(program, "\n"),
+		func(e string) bool { return strings.TrimSpace(e) == "" })
+
+	toks := make([][]string, 0)
+
+	for _, line := range lines {
+		// Remove all tabs
+		line = strings.ReplaceAll(line, "	", "")
+
+		// Split for tokens and remove whitespace only tokens
+		lineToks := slices.DeleteFunc(strings.Split(line, " "),
+			func(e string) bool { return strings.TrimSpace(e) == "" })
+
+		toks = append(toks, lineToks)
+	}
+
+	return toks
+}
+
+// Evaluate the program as a 2d token array
 func eval(tokens [][]string) {
 	state.tokens = tokens
 	// Evaluate each line
@@ -125,6 +147,7 @@ func eval(tokens [][]string) {
 	}
 }
 
+// Evaluate a single arithmetic expression and return its value
 func evalExpr(toks []string) int {
 	stack := make([]int, 0)
 
@@ -176,26 +199,6 @@ func evalExpr(toks []string) int {
 	return pop(&stack)
 }
 
-func tokenizeProgram(program string) [][]string {
-	lines := slices.DeleteFunc(strings.Split(program, "\n"),
-		func(e string) bool { return strings.TrimSpace(e) == "" })
-
-	toks := make([][]string, 0)
-
-	for _, line := range lines {
-		// Remove all tabs
-		line = strings.ReplaceAll(line, "	", "")
-
-		// Split for tokens and remove whitespace only tokens
-		lineToks := slices.DeleteFunc(strings.Split(line, " "),
-			func(e string) bool { return strings.TrimSpace(e) == "" })
-
-		toks = append(toks, lineToks)
-	}
-
-	return toks
-}
-
 func main() {
 	args := os.Args[1:]
 	fPath := args[0]
@@ -207,8 +210,6 @@ func main() {
 	program := string(dat)
 
 	toks := tokenizeProgram(program)
-
-	fmt.Print(toks, "\n")
 
 	eval(toks)
 
