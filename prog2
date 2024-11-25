@@ -5,12 +5,13 @@ while n 0 >
     n = n 1 -
 
 	if r 60 ==
-		print "Found_60"
+		print "Found_60_when_n_is:"
+		print n
 	endif
 endwhile
 
 if r 120 ==
-	print "It's 5!"
+	print "It's_5!"
 endif
 
 print r

@@ -22,13 +22,13 @@ Parser
 type progState struct {
 	vars map[string]int
 	pc int					// Program Counter
-	lines []string			// The program stored as an array of lines
+	tokens [][]string			// The program stored as a 2d token array
 }
 
 var state = progState{
 	make(map[string]int),
 	0,
-	make([]string, 0) }
+	make([][]string, 0) }
 
 // Regex
 //var varName, _ = regexp.Compile("_?[a-zA-Z_]")
@@ -62,40 +62,25 @@ func last(str string) byte {
 // Search the program for the corresponding 'end' statement
 // and skip to the line after it
 func traverseTo(token string) {
-	for parseLine(state.lines[state.pc])[0] != token { state.pc++ }
+	for state.tokens[state.pc][0] != token { state.pc++ }
 	//state.pc++
 }
 
 // Search backwards for the start of our block
 func traverseBackTo(token string) {
-	for parseLine(state.lines[state.pc])[0] != token { state.pc-- }
+	for state.tokens[state.pc][0] != token { state.pc-- }
 }
 
-// Convert a raw program line into a list of tokens
-func parseLine(line string) []string {
-	// Remove all tabs
-	line = strings.ReplaceAll(line, "	", "")
-
-	// Split for tokens and remove whitespace only tokens
-	toks := slices.DeleteFunc(strings.Split(line, " "),
-		func(e string) bool { return strings.TrimSpace(e) == "" })
-
-	return toks
-}
-
-func eval(program string) {
-	// Split on newlines and filter out empty lines
-	state.lines = slices.DeleteFunc(strings.Split(program, "\n"),
-		func(e string) bool { return strings.TrimSpace(e) == "" })
-
+func eval(tokens [][]string) {
+	state.tokens = tokens
 	// Evaluate each line
-	for state.pc < len(state.lines) {
-		toks := parseLine(state.lines[state.pc])
+	for state.pc < len(tokens) {
+		lineToks := tokens[state.pc]
 
 		// Figure out what's going on in this line
-		switch toks[0] {
+		switch lineToks[0] {
 		case "while":
-			if evalExpr(toks[1:]) != 0 {
+			if evalExpr(lineToks[1:]) != 0 {
 				// Condition is true, keep going
 			} else {
 				// Condition is false, skip past the end statement and continue executing
@@ -107,7 +92,7 @@ func eval(program string) {
 			continue
 
 		case "if":
-			if evalExpr(toks[1:]) != 0 {
+			if evalExpr(lineToks[1:]) != 0 {
 			} else {
 				traverseTo("endif")
 			}
@@ -117,22 +102,22 @@ func eval(program string) {
 			continue
 
 		case "print":
-			if toks[1][0:1] == "\"" {
+			if lineToks[1][0:1] == "\"" {
 				// Found a string
-				if string(last(toks[1])) != "\"" {
+				if string(last(lineToks[1])) != "\"" {
 					die("Unclosed string. You need to close the quotes or remove the spaces")
 				}
-				fmt.Println(toks[1][1:len(toks[1]) - 1])
+				fmt.Println(lineToks[1][1:len(lineToks[1]) - 1])
 			} else {
 				// Found an expression to parse
-				fmt.Println(evalExpr(toks[1:]))
+				fmt.Println(evalExpr(lineToks[1:]))
 			}
 
 		// Assume if it isn't a reserved word it's a variable
 		default:
-			if toks[1] == "=" {
+			if lineToks[1] == "=" {
 				// In the variable map assign this var to the expression to the right of '='
-				state.vars[toks[0]] = evalExpr(toks[2:])
+				state.vars[lineToks[0]] = evalExpr(lineToks[2:])
 			}
 		}
 
@@ -211,7 +196,6 @@ func tokenizeProgram(program string) [][]string {
 	return toks
 }
 
-
 func main() {
 	args := os.Args[1:]
 	fPath := args[0]
@@ -224,7 +208,9 @@ func main() {
 
 	toks := tokenizeProgram(program)
 
-	//eval(program)
+	fmt.Print(toks, "\n")
+
+	eval(toks)
 
 	// Dump the program state when we're done
 	//fmt.Println(state.vars)
