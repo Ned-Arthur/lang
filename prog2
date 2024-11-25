@@ -1,0 +1,16 @@
+n = 5
+r = 1
+while n 0 >
+	r = r n *
+    n = n 1 -
+
+	if r 60 ==
+		print "Found_60"
+	endif
+endwhile
+
+if r 120 ==
+	print "It's 5!"
+endif
+
+print r
