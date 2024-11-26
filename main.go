@@ -86,7 +86,25 @@ func tokenizeProgram(program string) [][]string {
 		lineToks := slices.DeleteFunc(strings.Split(line, " "),
 			func(e string) bool { return strings.TrimSpace(e) == "" })
 
-		toks = append(toks, lineToks)
+		processedToks := make([]string, 0)
+
+		i := 0
+		for i < len(lineToks) {
+			tok := lineToks[i]
+
+			// Handle Strings
+			if tok[0:1] == "\"" {
+				for last(tok) != "\""[0] {
+					i++
+					tok += " " + lineToks[i]
+				}
+			}
+
+			processedToks = append(processedToks, tok)
+			i++
+		}
+
+		toks = append(toks, processedToks)
 	}
 
 	return toks
