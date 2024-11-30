@@ -1,0 +1,14 @@
+int power ( int base , int index )
+    ret = base
+    while index 1 >
+        ret = ret base *
+        index = index 1 -
+    endwhile
+    return ret
+endfunc
+
+num = power ( 2 , 6 )
+num2 = power ( num , 6 )
+
+print num2
+

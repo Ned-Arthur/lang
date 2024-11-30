@@ -1,1 +1,16 @@
-print "Hello, World!"
+int func ( )
+    a = 2
+    return a 1 +
+endfunc
+
+num = func ( )
+
+print "Function return gives:"
+print num
+
+void bar ( int arg )
+    print 2 arg *
+endfunc
+
+print "And an impure function still works (?):"
+bar ( 4 )

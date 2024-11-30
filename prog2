@@ -1,17 +1,15 @@
-n = 5
-r = 1
-while n 0 >
-	r = r n *
-    n = n 1 -
+int factorial ( int n )
+    r = 1
+    while n 0 >
+        r = r n *
+        n = n 1 -
+    endwhile
+    return r
+endfunc
 
-	if r 60 ==
-		print "Found 60 when n is:"
-		print n
-	endif
-endwhile
+input num
 
-if r 120 ==
-	print "It's 5!"
-endif
+ans = factorial ( num )
 
-print r
+print "answer is"
+print ans
