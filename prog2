@@ -11,5 +11,5 @@ input num
 
 ans = factorial ( num )
 
-print "answer is"
+print "Answer is:"
 print ans

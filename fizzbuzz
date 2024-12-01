@@ -1,0 +1,17 @@
+y = 1
+while y 20 <=
+    if y 3 % y 5 % || 0 ==
+        print "FizzBuzz"
+    else
+        if y 3 % 0 ==
+            print "Fizz"
+        else
+            if y 5 % 0 ==
+                print "Buzz"
+            else
+                print y
+            endif
+        endif
+    endif
+    y = y 1 +
+endwhile

@@ -1,0 +1,59 @@
+// A tour of the language (TODO come up with a name)
+// This is a runnable version of the home page of the github wiki
+
+print "-------------Variables-------------"
+num = 2
+x = num 3 * 2 +
+
+stringVar = "Put a string here"
+
+// Check these have been created
+dump
+
+print "-------------Input/Output-------------"
+
+print "This is a string"
+print 2 3 +
+y = 18
+print y 2 /
+
+input z
+print z 2 *
+
+print "-------------Conditionals-------------"
+
+if 1 1 + 2 ==
+    print "Maths works"
+endif
+
+if 3 3 * 10 ==
+    print "Inconcievable!"
+else
+    print "Phew"
+endif
+
+print "-------------Looping-------------"
+
+i = 5
+while i 0 >
+    print "Counting..."
+    print i
+    i = i 1 -
+endwhile
+print "Done!"
+print i
+
+print "-------------Functions-------------"
+void foo ( )
+    print "Doing stuff"
+endfunc
+
+int double ( int n )
+    result = n 2 *
+    return result
+endfunc
+
+foo ( )
+answer = double ( 5 )
+print answer
+

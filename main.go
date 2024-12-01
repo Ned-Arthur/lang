@@ -49,8 +49,8 @@ type progState struct {
     pc int                              // Program Counter
     functionCalls []functionCall        // An array of data for function calls
     executingFunction bool
-	parsingFunCallArgs bool				// Flag for when we need to look at the *previous* stack frame
-    returnValue int						// What the last function returned
+    parsingFunCallArgs bool             // Flag for when we need to look at the *previous* stack frame
+    returnValue int                     // What the last function returned
 }
 
 var state = progState{
@@ -60,7 +60,7 @@ var state = progState{
     0,
     make([]functionCall, 0),
     false,
-	false,
+    false,
     0 }
 
 type argument struct {
@@ -162,10 +162,9 @@ func tokenizeProgram(program string) [][]string {
         lineToks := slices.DeleteFunc(strings.Split(line, " "),
             func(e string) bool { return strings.TrimSpace(e) == "" })
 
-		if lineToks[0][0:2] == "//" {
-			continue
-		}
-		
+        if len(lineToks[0]) >= 2 && lineToks[0][0:2] == "//" {
+            continue
+        }
 
         processedToks := make([]string, 0)
 
@@ -199,10 +198,6 @@ func eval(tokens [][]string) {
         lineToks := tokens[state.pc]
         // Figure out what's going on in this line
         switch lineToks[0] {
-        case "//":
-            state.pc++
-            continue
-
         case "while":
             if evalExpr(lineToks[1:]) != 0 {
                 // Condition is true, keep going
@@ -325,11 +320,11 @@ func eval(tokens [][]string) {
                     }
 
                     state.functionCalls = append(state.functionCalls, functionCall{ state.pc, newScope() })
-					// We're not in a function yet so we can evaluate variable arguments,
-					// but we still need to assign argument VALUES to the variable scope
-					functionScope := last(&state.functionCalls).funcScope
+                    // We're not in a function yet so we can evaluate variable arguments,
+                    // but we still need to assign argument VALUES to the variable scope
+                    functionScope := last(&state.functionCalls).funcScope
 
-					state.parsingFunCallArgs = true
+                    state.parsingFunCallArgs = true
                     for i, arg := range val.args {
                         argExpr := make([]string, 0)
                         for j := i * 2 + 2; lineToks[j] != "," && lineToks[j] != ")"; j++ {
@@ -338,7 +333,7 @@ func eval(tokens [][]string) {
 
                         functionScope.ints[arg.argName] = evalExpr(argExpr)
                     }
-					state.parsingFunCallArgs = false
+                    state.parsingFunCallArgs = false
 
                     state.executingFunction = true
                     state.pc = val.startline
@@ -363,9 +358,9 @@ func eval(tokens [][]string) {
                         }
 
                         state.functionCalls = append(state.functionCalls, functionCall{ state.pc, newScope() })
-						functionScope := last(&state.functionCalls).funcScope
+                        functionScope := last(&state.functionCalls).funcScope
 
-						state.parsingFunCallArgs = true
+                        state.parsingFunCallArgs = true
                         for i, arg := range val.args {
                             argExpr := make([]string, 0)
                             for j := i*2 + 4; lineToks[j] != "," && lineToks[j] != ")"; j++ {
@@ -374,7 +369,7 @@ func eval(tokens [][]string) {
 
                             functionScope.ints[arg.argName] = evalExpr(argExpr)
                         }
-						state.parsingFunCallArgs = false
+                        state.parsingFunCallArgs = false
                         
                         state.executingFunction = true
                         state.pc = val.startline
@@ -408,8 +403,11 @@ func evalExpr(toks []string) int {
         }
 
         // Handle binary operators
-        operators := []string{"+", "-", "*", "/", ">", "<", ">=", "<=", "==", "!="}
+        operators := []string{"+", "-", "*", "/", "%", ">", "<", ">=", "<=", "==", "!=", "&&", "||"}
         if slices.Contains(operators, tok) {
+            if len(stack) < 2 {
+                log.Fatal("Operator used before both elements are in the stack. Likely forgot to use Reverse Polish notation")
+            }
             rhs := pop(&stack)
             lhs := pop(&stack)
 
@@ -424,6 +422,8 @@ func evalExpr(toks []string) int {
                 stack = append(stack, lhs * rhs)
             case "/":
                 stack = append(stack, lhs / rhs)
+            case "%":
+                stack = append(stack, lhs % rhs)
 
             // Boolean comparisons
             case ">":
@@ -438,6 +438,12 @@ func evalExpr(toks []string) int {
                 stack = append(stack, Btoi(lhs == rhs))
             case "!=":
                 stack = append(stack, Btoi(lhs != rhs))
+
+            // Logical operators
+            case "&&":
+                stack = append(stack, Btoi(lhs!=0 && rhs!=0))
+            case "||":
+                stack = append(stack, Btoi(lhs!=0 || rhs!=0))
             }
             continue
         }
@@ -445,9 +451,9 @@ func evalExpr(toks []string) int {
         // Handle variables
         // First, grab our scope
         workingScope := getWorkingScope()
-		if state.parsingFunCallArgs && len(state.functionCalls) >= 2 {
-			workingScope = state.functionCalls[len(state.functionCalls) - 2].funcScope
-		}
+        if state.parsingFunCallArgs && len(state.functionCalls) >= 2 {
+            workingScope = state.functionCalls[len(state.functionCalls) - 2].funcScope
+        }
 
 
         if val, exists := workingScope.ints[tok]; exists {
